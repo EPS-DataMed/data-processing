@@ -22,6 +22,8 @@ class formulario(BaseModel):
     historico_familiar: str
     observacoes_importantes: str
     exame_de_imagem: str
+    nome: str
+    idade: int
 
 app = FastAPI()
 
@@ -32,6 +34,8 @@ async def root():
 @app.post("/exames/{user_id}")
 async def data_processing(user_id: int, listaExames: List[int]):
     return
+
+
 
 @app.post("/formulario/{user_id}")
 async def add_formulario(user_id: int, formulario: formulario):
