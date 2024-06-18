@@ -25,6 +25,13 @@ def extract_values_from_text(text, patterns):
             }
     return results
 
+def extract_exam_date(text):
+    pattern_date = r'Atendimento\s*:\s*(\d{2}/\d{2}/\d{4})'
+    match = re.search(pattern_date, text)
+    if match:
+        return match.group(1)
+    return None
+
 def extract_blood_values(pdf_path):
     # Define os padrões de expressões regulares e unidades correspondentes
     patterns = {
@@ -44,9 +51,12 @@ def extract_blood_values(pdf_path):
     # Extrai os valores
     blood_values = extract_values_from_text(pdf_text, patterns)
     
-    return blood_values
+    # Extrai a data do exame
+    exam_date = extract_exam_date(pdf_text)
+    
+    return blood_values, exam_date
 
-def print_blood_values(blood_values):
+def print_blood_values(blood_values, exam_date):
     # Define os campos e a ordem de impressão
     fields = [
         ("Hemoglobina", "hemoglobin"),
@@ -58,6 +68,9 @@ def print_blood_values(blood_values):
         ("Ureia", "ureia"),
         ("Creatinina", "creatinina")
     ]
+    
+    # Imprime a data do exame
+    print(f"Data do Exame: {exam_date}")
     
     for label, key in fields:
         value = blood_values.get(key, {}).get("value", "")
@@ -71,7 +84,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 pdf_path = os.path.join(script_dir, 'hemograma.pdf')  # Caminho absoluto para o arquivo PDF
 
 # Extrai os valores do PDF
-blood_values = extract_blood_values(pdf_path)
+blood_values, exam_date = extract_blood_values(pdf_path)
 
 # Imprime os valores extraídos com unidades
-print_blood_values(blood_values)
+print_blood_values(blood_values, exam_date)
