@@ -14,6 +14,7 @@ from schemas import Form
 from database import SessionLocal
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+from scraping import data_scraping
 
 app = FastAPI()
 app.add_middleware(
@@ -51,20 +52,6 @@ def is_form_filled(form: Form) -> bool:
 
     return all(field is not None for field in form_fields)
 
-class DataScraped:
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
-
-def data_scraping(test_id):
-    dataScraped = [
-        DataScraped('ast', '14g/dL'),
-        DataScraped('alt', '40mg/dL'),
-        DataScraped('creatinine', '1.2mg/dL'),
-    ]
-    randomDate = datetime(2024, 1, 30, 20, 50, 44, 296396)
-    return dataScraped, randomDate
-
 @app.get("/")
 async def root():
     return {"message": "Data processing service"}
@@ -84,14 +71,15 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
         db.refresh(user_form)
 
     for test_id in testsIdList:
-        dataScraped, scrapeTime = data_scraping(test_id)
         test = db.query(models.Test).filter(models.Test.id == test_id).first()
+        filename = test.test_name
+        dataScraped, dateScraped = data_scraping(user_id, filename)
         if not test:
             return JSONResponse(content={"status": 404, "message": f"Test with ID '{test_id}' not found"}, status_code=404)
         elif test.user_id != user_id:
             return JSONResponse(content={"status": 400, "message": f"Test with ID '{test_id}' is not a test of the user with ID {user_id}"}, status_code=400)
         else:
-            test.test_date = scrapeTime
+            test.test_date = dateScraped
             db.add(test)
 
         for data in dataScraped:
