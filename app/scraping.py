@@ -15,10 +15,10 @@ s3_client = boto3.client(
     region_name=os.getenv('S3_REGION_NAME')
 )
 
-class DataScraped:
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
+# class DataScraped:
+#     def __init__(self, name, value):
+#         self.name = name
+#         self.value = value
 
 def extract_text_from_s3_pdf(user_id: int, filename: str) -> str:
     s3_key = f"{user_id}/{filename}"
@@ -42,15 +42,16 @@ def extract_text_from_s3_pdf(user_id: int, filename: str) -> str:
     except Exception as e:
         return JSONResponse(content={"status": 500, "message": f"Error while downloading the file '{filename}' on AWS S3 for user '{user_id}'"}, status_code=500)
 
-from datetime import datetime
-def text_processing(text):
-    dataScraped = [
-        DataScraped('ast', '14g/dL'),
-        DataScraped('alt', '40mg/dL'),
-        DataScraped('creatinine', '1.2mg/dL'),
-    ]
-    randomDate = datetime(2024, 1, 30, 20, 50, 44, 296396)
-    return dataScraped, randomDate
+# from datetime import datetime
+# def text_processing(text):
+#     dataScraped = [
+#         DataScraped('ast', '14g/dL'),
+#         DataScraped('alt', '40mg/dL'),
+#         DataScraped('creatinine', '1.2mg/dL'),
+#     ]
+#     randomDate = datetime(2024, 1, 30, 20, 50, 44, 296396)
+#     return dataScraped, randomDate
+from main import text_processing
 
 def data_scraping(user_id: int, filename: str):
     text = extract_text_from_s3_pdf(user_id, filename)
