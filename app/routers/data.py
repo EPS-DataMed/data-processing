@@ -114,6 +114,9 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
             .first()
         )
         latest_values[metric] = latest_value.value if latest_value else None
+        if latest_values.get(metric) is not None:
+            setattr(user_form, f'latest_{metric}', latest_values.get(metric))
+
 
     if any(latest_values.values()):
         user_form.form_status = "In progress" if user_form.form_status != "Filled" else user_form.form_status
@@ -135,14 +138,14 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
         "important_notes": user_form.important_notes,
         "images_reports": user_form.images_reports,
         "form_status": user_form.form_status,
-        "latest_red_blood_cell": latest_values.get('red_blood_cell') or user_form.latest_red_blood_cell,
-        "latest_hemoglobin": latest_values.get('hemoglobin') or user_form.latest_hemoglobin,
-        "latest_hematocrit": latest_values.get('hematocrit') or user_form.latest_hematocrit,
-        "latest_glycated_hemoglobin": latest_values.get('glycated_hemoglobin') or user_form.latest_glycated_hemoglobin,
-        "latest_ast": latest_values.get('ast') or user_form.latest_ast,
-        "latest_alt": latest_values.get('alt') or user_form.latest_alt,
-        "latest_urea": latest_values.get('urea') or user_form.latest_urea,
-        "latest_creatinine": latest_values.get('creatinine') or user_form.latest_creatinine,
+        "latest_red_blood_cell": user_form.latest_red_blood_cell,
+        "latest_hemoglobin": user_form.latest_hemoglobin,
+        "latest_hematocrit": user_form.latest_hematocrit,
+        "latest_glycated_hemoglobin": user_form.latest_glycated_hemoglobin,
+        "latest_ast": user_form.latest_ast,
+        "latest_alt": user_form.latest_alt,
+        "latest_urea": user_form.latest_urea,
+        "latest_creatinine": user_form.latest_creatinine,
     }
     
     return JSONResponse(content={"status": 200, "message": f"The following form was updated for user with ID '{user_id}'", "data": form_response}, status_code=200)
