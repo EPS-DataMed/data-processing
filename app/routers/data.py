@@ -174,7 +174,7 @@ async def update_form(user_id: int, request_form: Form, db: Session = Depends(ge
     return JSONResponse(content={"status": 200, "message": f"The form was updated for user with ID '{user_id}'"}, status_code=200)
 
 @app.get("/data/form-and-latest-tests/{user_id}")
-async def get_form_and_latest_tests(user_id: int, db: Session = Depends(get_db)):
+async def get_form(user_id: int, db: Session = Depends(get_db)):
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
