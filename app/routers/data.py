@@ -4,66 +4,25 @@ d = dirname(dirname(abspath(__file__)))
 import sys
 sys.path.append(d)
 
-import uvicorn
-from fastapi import FastAPI, Depends
-from fastapi.responses import JSONResponse
-from typing import List, Annotated
 from datetime import datetime
-import models
-from schemas import Form
-from database import SessionLocal
-from sqlalchemy.orm import Session
-from fastapi.middleware.cors import CORSMiddleware
-from scraping import data_scraping
+from typing import List
 
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+from sqlalchemy.orm import Session
+from fastapi import Depends, APIRouter
+from fastapi.responses import JSONResponse
+
+import models
+from database import get_db
+from schemas import FormRequest
+from scraping import data_scraping
+from utils import is_form_filled
+
+router = APIRouter(
+    prefix="/data",
+    tags=['Data']
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-db_dependency = Annotated[Session, Depends(get_db)]
-
-
-def is_form_filled(form: Form) -> bool:
-    form_fields = [
-        form.weight,
-        form.height,
-        form.bmi,
-        form.blood_type,
-        form.abdominal_circumference,
-        form.allergies,
-        form.diseases,
-        form.medications,
-        form.family_history,
-        form.form_status,
-        form.latest_red_blood_cell, 
-        form.latest_hemoglobin, 
-        form.latest_hematocrit, 
-        form.latest_glycated_hemoglobin, 
-        form.latest_ast, 
-        form.latest_alt, 
-        form.latest_urea, 
-        form.latest_creatinine
-    ]
-
-    return all(field is not None for field in form_fields)
-
-@app.get("/")
-async def root():
-    return {"message": "Data processing service"}
-
-@app.post("/data/tests-processing/{user_id}")
+@router.post("/tests-processing/{user_id}")
 async def tests_processing(user_id: int, testsIdList: List[int], db: Session = Depends(get_db)):
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -150,8 +109,8 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
     
     return JSONResponse(content={"status": 200, "message": f"The following form was updated for user with ID '{user_id}'", "data": form_response}, status_code=200)
 
-@app.put("/data/form/{user_id}")
-async def update_form(user_id: int, request_form: Form, db: Session = Depends(get_db)):
+@router.put("/form/{user_id}")
+async def update_form(user_id: int, request_form: FormRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         return JSONResponse(content={"status": 404, "message": "User with ID {user_id} not found"}, status_code=404)
@@ -176,7 +135,7 @@ async def update_form(user_id: int, request_form: Form, db: Session = Depends(ge
 
     return JSONResponse(content={"status": 200, "message": f"The form was updated for user with ID '{user_id}'"}, status_code=200)
 
-@app.get("/data/form-and-latest-tests/{user_id}")
+@router.get("/form-and-latest-tests/{user_id}")
 async def get_form(user_id: int, db: Session = Depends(get_db)):
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -213,12 +172,3 @@ async def get_form(user_id: int, db: Session = Depends(get_db)):
         "latest_creatinine": user_form.latest_creatinine
     }
     return JSONResponse(content={"status": 200, "message": f"The following form was found for user with ID '{user_id}'", "data": form_response}, status_code=200)
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "data:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-    )
-

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class Form(BaseModel):
+class FormRequest(BaseModel):
     weight: Optional[float]
     height: Optional[float]
     bmi: Optional[float]
