@@ -2,8 +2,8 @@ import os
 import re
 import fitz
 from datetime import datetime
-from utils import s3_client
 from fastapi.responses import JSONResponse
+from app.utils import s3_client
 
 class DataScraped:
     def __init__(self, name, value):

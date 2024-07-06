@@ -161,6 +161,3 @@ class TestScrapingFunctions(unittest.TestCase):
         for result, expected in zip(data_values, expected_results):
             self.assertEqual(result.name, expected.name)
             self.assertEqual(result.value, expected.value)
-
-if __name__ == '__main__':
-    unittest.main()

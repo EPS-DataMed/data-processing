@@ -1,9 +1,3 @@
-import os
-from os.path import dirname, abspath
-d = dirname(dirname(abspath(__file__)))
-import sys
-sys.path.append(d)
-
 from datetime import datetime
 from typing import List
 
@@ -11,11 +5,11 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
 
-import models
-from database import get_db
-from schemas import FormRequest
-from scraping import data_scraping
-from utils import is_form_filled
+from app import models
+from app.database import get_db
+from app.schemas import FormRequest
+from app.scraping import data_scraping
+from app.utils import is_form_filled
 
 router = APIRouter(
     prefix="/data",
@@ -27,7 +21,7 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return JSONResponse(content={"status": 404, "message": "User with ID '{user_id}' not found"}, status_code=404)
+        return JSONResponse(content={"status": 404, f"message": f"User with ID '{user_id}' not found"}, status_code=404)
 
     user_form = db.query(models.Form).filter(models.Form.user_id == user_id).first()
     if not user_form:
@@ -38,15 +32,15 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
 
     for test_id in testsIdList:
         test = db.query(models.Test).filter(models.Test.id == test_id).first()
-        filename = test.test_name
-        dataScraped, dateScraped = data_scraping(user_id, filename)
         if not test:
             return JSONResponse(content={"status": 404, "message": f"Test with ID '{test_id}' not found"}, status_code=404)
         elif test.user_id != user_id:
             return JSONResponse(content={"status": 400, "message": f"Test with ID '{test_id}' is not a test of the user with ID {user_id}"}, status_code=400)
-        else:
-            test.test_date = dateScraped
-            db.add(test)
+
+        filename = test.test_name
+        dataScraped, dateScraped = data_scraping(user_id, filename)
+        test.test_date = dateScraped
+        db.add(test)
 
         for data in dataScraped:
             new_health_data = models.DerivedHealthData(
@@ -113,9 +107,9 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
 async def update_form(user_id: int, request_form: FormRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return JSONResponse(content={"status": 404, "message": "User with ID {user_id} not found"}, status_code=404)
+        return JSONResponse(content={"status": 404, "message": f"User with ID '{user_id}' not found"}, status_code=404)
 
-    if not request_form:
+    if not request_form.dict(exclude_none=True):
         return JSONResponse(content={"status": 400, "message": "Empty form"}, status_code=400)
 
     user_form = db.query(models.Form).filter(models.Form.user_id == user_id).first()
@@ -140,7 +134,7 @@ async def get_form(user_id: int, db: Session = Depends(get_db)):
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return JSONResponse(content={"status": 404, "message": "User with ID {user_id} not found"}, status_code=404)
+        return JSONResponse(content={"status": 404, "message": f"User with ID {user_id} not found"}, status_code=404)
 
     user_form = db.query(models.Form).filter(models.Form.user_id == user_id).first()
     if not user_form:

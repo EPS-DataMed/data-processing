@@ -1,6 +1,6 @@
 import os
 import boto3
-from schemas import FormRequest
+from app.schemas import FormRequest
 
 s3_client = boto3.client(
     "s3",
