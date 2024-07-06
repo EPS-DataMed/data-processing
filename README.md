@@ -5,7 +5,7 @@
 
 ## Descrição do Projeto
 
-Este projeto tem como objetivo fornecer uma solução completa para processamento de dados. Utilizando tecnologias modernas, o projeto oferece uma solução robusta e funcionalidades para manipulação e análise de exames.
+Este projeto tem como objetivo fornecer uma solução completa para processamento de dados. Utilizando tecnologias modernas, o projeto oferece uma solução robusta e funcionalidades para manipulação e extração de dados de exames médicos.
 
 ## Pré-requisitos
 
@@ -21,7 +21,7 @@ Siga os passos abaixo para configurar o ambiente de desenvolvimento local:
 
    ```bash
    git clone <URL_DO_REPOSITORIO>
-   cd data-processing-main
+   cd data-processing
    ```
 
 2. **Crie e ative um ambiente virtual**
@@ -59,4 +59,4 @@ pytest
 
 ## Licença
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+Este projeto está licenciado sob a [MIT License](https://www.mit.edu/~amini/LICENSE.md).
