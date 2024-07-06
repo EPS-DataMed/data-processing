@@ -107,9 +107,9 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
 async def update_form(user_id: int, request_form: FormRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return JSONResponse(content={"status": 404, "message": "User with ID {user_id} not found"}, status_code=404)
+        return JSONResponse(content={"status": 404, "message": f"User with ID {user_id} not found"}, status_code=404)
 
-    if not request_form:
+    if not request_form.dict(exclude_none=True):
         return JSONResponse(content={"status": 400, "message": "Empty form"}, status_code=400)
 
     user_form = db.query(models.Form).filter(models.Form.user_id == user_id).first()
@@ -134,7 +134,7 @@ async def get_form(user_id: int, db: Session = Depends(get_db)):
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return JSONResponse(content={"status": 404, "message": "User with ID {user_id} not found"}, status_code=404)
+        return JSONResponse(content={"status": 404, "message": f"User with ID {user_id} not found"}, status_code=404)
 
     user_form = db.query(models.Form).filter(models.Form.user_id == user_id).first()
     if not user_form:
