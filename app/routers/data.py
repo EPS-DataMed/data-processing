@@ -1,9 +1,3 @@
-import os
-from os.path import dirname, abspath
-d = dirname(dirname(abspath(__file__)))
-import sys
-sys.path.append(d)
-
 from datetime import datetime
 from typing import List
 
@@ -11,11 +5,11 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
 
-import models
-from database import get_db
-from schemas import FormRequest
-from scraping import data_scraping
-from utils import is_form_filled
+from app import models
+from app.database import get_db
+from app.schemas import FormRequest
+from app.scraping import data_scraping
+from app.utils import is_form_filled
 
 router = APIRouter(
     prefix="/data",
