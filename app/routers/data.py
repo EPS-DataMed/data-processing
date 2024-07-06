@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 from sqlalchemy.orm import Session
@@ -9,7 +8,7 @@ from app import models
 from app.database import get_db
 from app.schemas import FormRequest
 from app.scraping import data_scraping
-from app.utils import is_form_filled
+from app.utils import is_form_filled, create_form_response
 
 router = APIRouter(
     prefix="/data",
@@ -21,7 +20,7 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return JSONResponse(content={"status": 404, f"message": f"User with ID '{user_id}' not found"}, status_code=404)
+        return JSONResponse(content={"status": 404, "message": f"User with ID '{user_id}' not found"}, status_code=404)
 
     user_form = db.query(models.Form).filter(models.Form.user_id == user_id).first()
     if not user_form:
@@ -70,36 +69,12 @@ async def tests_processing(user_id: int, testsIdList: List[int], db: Session = D
         if latest_values.get(metric) is not None:
             setattr(user_form, f'latest_{metric}', latest_values.get(metric))
 
-
     if any(latest_values.values()):
         user_form.form_status = "In progress" if user_form.form_status != "Filled" else user_form.form_status
         db.commit()
         db.refresh(user_form)
     
-    form_response = {
-        "name": user.full_name,
-        "age": (datetime.now().date() - user.birth_date).days // 365,
-        "weight": user_form.weight,
-        "height": user_form.height,
-        "bmi": user_form.bmi,
-        "blood_type": user_form.blood_type,
-        "abdominal_circumference": user_form.abdominal_circumference,  
-        "allergies": user_form.allergies,
-        "diseases": user_form.diseases,
-        "medications": user_form.medications,
-        "family_history": user_form.family_history,
-        "important_notes": user_form.important_notes,
-        "images_reports": user_form.images_reports,
-        "form_status": user_form.form_status,
-        "latest_red_blood_cell": user_form.latest_red_blood_cell,
-        "latest_hemoglobin": user_form.latest_hemoglobin,
-        "latest_hematocrit": user_form.latest_hematocrit,
-        "latest_glycated_hemoglobin": user_form.latest_glycated_hemoglobin,
-        "latest_ast": user_form.latest_ast,
-        "latest_alt": user_form.latest_alt,
-        "latest_urea": user_form.latest_urea,
-        "latest_creatinine": user_form.latest_creatinine,
-    }
+    form_response = create_form_response(user, user_form)
     
     return JSONResponse(content={"status": 200, "message": f"The following form was updated for user with ID '{user_id}'", "data": form_response}, status_code=200)
 
@@ -141,28 +116,5 @@ async def get_form(user_id: int, db: Session = Depends(get_db)):
         form_response = {}
         return JSONResponse(content={"status": 200, "message": f"No form was found for user with ID '{user_id}'", "data": form_response}, status_code=200)
     
-    form_response = {
-        "name": user.full_name,
-        "age": (datetime.now().date() - user.birth_date).days // 365,
-        "weight": user_form.weight,
-        "height": user_form.height,
-        "bmi": user_form.bmi,
-        "blood_type": user_form.blood_type,
-        "abdominal_circumference": user_form.abdominal_circumference,
-        "allergies": user_form.allergies,
-        "diseases": user_form.diseases,
-        "medications": user_form.medications,
-        "family_history": user_form.family_history,
-        "important_notes": user_form.important_notes,
-        "images_reports": user_form.images_reports,
-        "form_status": user_form.form_status,
-        "latest_red_blood_cell": user_form.latest_red_blood_cell,
-        "latest_hemoglobin": user_form.latest_hemoglobin,
-        "latest_hematocrit": user_form.latest_hematocrit,
-        "latest_glycated_hemoglobin": user_form.latest_glycated_hemoglobin,
-        "latest_ast": user_form.latest_ast,
-        "latest_alt": user_form.latest_alt,
-        "latest_urea": user_form.latest_urea,
-        "latest_creatinine": user_form.latest_creatinine
-    }
+    form_response = create_form_response(user, user_form)
     return JSONResponse(content={"status": 200, "message": f"The following form was found for user with ID '{user_id}'", "data": form_response}, status_code=200)
