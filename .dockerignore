@@ -18,4 +18,4 @@ __pycache__
 .vscode
 .idea
 node_modules
-test
+tests
